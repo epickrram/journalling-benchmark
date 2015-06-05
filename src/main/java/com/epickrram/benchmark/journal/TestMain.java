@@ -23,7 +23,14 @@ public final class TestMain
     public static void main(final String[] args) throws IOException
     {
         final Config config = new Config();
-        new JCommander(config).parse(args);
+        final JCommander commander = new JCommander(config);
+        commander.parse(args);
+
+        if(config.help)
+        {
+            commander.usage();
+            System.exit(0);
+        }
 
         final Path journalDir = Paths.get(config.journalDir);
 
@@ -67,14 +74,16 @@ public final class TestMain
     {
         @Parameter(names = "-d", description = "journal dir")
         private String journalDir = System.getProperty("java.io.tmpdir");
-        @Parameter(names = "-s", description = "file size (bytes), default 1Mb")
+        @Parameter(names = "-s", description = "file size (bytes)")
         private int fileSize = 1024 * 1024;
-        @Parameter(names = "-c", description = "number of journals, default 50")
+        @Parameter(names = "-c", description = "number of journals")
         private int fileCount = 50;
-        @Parameter(names = "-t", description = "journaller type")
+        @Parameter(names = "-t", description = "journaller type [seek|pwrite]")
         private String journallerType;
-        @Parameter(names = "-i", description = "measurement iterations, default 5")
+        @Parameter(names = "-i", description = "measurement iterations")
         private int measurementIterations = 5;
+        @Parameter(names = "-h", description = "show help", help = true)
+        private boolean help;
     }
 
     private static Function<Path, RandomAccessFile> randomAccessFileFactory()
