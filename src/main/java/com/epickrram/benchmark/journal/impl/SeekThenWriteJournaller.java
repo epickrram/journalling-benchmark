@@ -12,13 +12,12 @@ public final class SeekThenWriteJournaller extends AbstractJournaller<RandomAcce
     }
 
     @Override
-    public void write(final ByteBuffer data) throws IOException
+    public void write(final ByteBuffer data, boolean newBlock) throws IOException
     {
+        positionInFile += (newBlock) ? data.remaining() : 0;
         assignJournal(data.remaining());
 
         currentJournal.seek(positionInFile);
-        final int messageSize = data.remaining();
         currentJournal.write(data.array(), data.position(), data.remaining());
-        positionInFile += messageSize;
     }
 }

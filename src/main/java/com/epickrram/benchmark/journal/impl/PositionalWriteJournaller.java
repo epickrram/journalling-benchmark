@@ -14,10 +14,11 @@ public final class PositionalWriteJournaller extends AbstractJournaller<FileChan
     }
 
     @Override
-    public void write(final ByteBuffer data) throws IOException
+    public void write(final ByteBuffer data, boolean newBlock) throws IOException
     {
+        positionInFile += (newBlock) ? data.remaining() : 0;
         assignJournal(data.remaining());
 
-        positionInFile += currentJournal.write(data, positionInFile);
+        currentJournal.write(data, positionInFile);
     }
 }
