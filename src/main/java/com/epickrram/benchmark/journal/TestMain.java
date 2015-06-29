@@ -57,12 +57,12 @@ public final class TestMain
         final TimingJournaller timingJournaller = new TimingJournaller(journaller);
 
         System.out.println("Doing warm-up");
-        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize, 1).execute();
+        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize, 1, config.writesPerBlock).execute();
 
         timingJournaller.setRecording(true);
 
         System.out.println("Starting measurement for journaller " + config.journallerType);
-        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize, config.measurementIterations).execute();
+        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize, config.measurementIterations, config.writesPerBlock).execute();
     }
 
     private static void preallocateFiles(final Config config, final Path journalDir) throws IOException
@@ -84,6 +84,8 @@ public final class TestMain
         private int measurementIterations = 5;
         @Parameter(names = "-h", description = "show help", help = true)
         private boolean help;
+        @Parameter(names = "-w", description = "writes per block")
+        private int writesPerBlock = 1;
     }
 
     private static Function<Path, RandomAccessFile> randomAccessFileFactory()

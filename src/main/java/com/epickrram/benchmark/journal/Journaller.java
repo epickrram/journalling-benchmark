@@ -9,6 +9,6 @@ public interface Journaller
     int BLOCK_SIZE = 4096;
     long DELAY_BETWEEN_BLOCKS_NANOS = TimeUnit.MICROSECONDS.toNanos(50L);
 
-    void write(final ByteBuffer data) throws IOException;
+    void write(final ByteBuffer data, boolean newBlock) throws IOException;
     void complete();
 }

@@ -24,10 +24,10 @@ public final class TimingJournaller implements Journaller
     }
 
     @Override
-    public void write(final ByteBuffer data) throws IOException
+    public void write(final ByteBuffer data, boolean newBlock) throws IOException
     {
         final long startNanos = System.nanoTime();
-        delegate.write(data);
+        delegate.write(data, newBlock);
 
         final long durationNanos = System.nanoTime() - startNanos;
         if(recording)
