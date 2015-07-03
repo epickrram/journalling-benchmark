@@ -43,6 +43,14 @@ public enum OutputFormat
                                     histogram.getTotalCount()));
                     printWriter.flush();
                 }
+            },
+    DETAIL
+            {
+                @Override
+                public void output(final Histogram histogram, final PrintWriter printWriter)
+                {
+                    histogram.outputPercentileDistribution(System.out, 1.0d);
+                }
             };
 
     public abstract void output(final Histogram histogram, final PrintWriter printWriter);

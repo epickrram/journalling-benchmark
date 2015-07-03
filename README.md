@@ -15,7 +15,7 @@ Parameters
 * -d - target directory for journals
 * -i - measurement iterations
 * -s - file size (bytes)
-* -f - output format (SHORT|LONG)
+* -f - output format (SHORT|LONG|DETAIL)
 * -w - number of times to write the same block
 * -t - journaller type
     * seek: RandomAccessFile seek/write
