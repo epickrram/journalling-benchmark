@@ -8,19 +8,19 @@ import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.String.format;
-
 public final class TimingJournaller implements Journaller
 {
     private static final long HIGHEST_TRACKABLE_VALUE = TimeUnit.SECONDS.toNanos(1L);
 
     private final Journaller delegate;
+    private final OutputFormat outputFormat;
     private final Histogram histogram = new Histogram(HIGHEST_TRACKABLE_VALUE, 4);
     private boolean recording;
 
-    public TimingJournaller(final Journaller delegate)
+    public TimingJournaller(final Journaller delegate, final OutputFormat outputFormat)
     {
         this.delegate = delegate;
+        this.outputFormat = outputFormat;
     }
 
     @Override
@@ -44,18 +44,7 @@ public final class TimingJournaller implements Journaller
         if(recording)
         {
             final PrintWriter printWriter = new PrintWriter(System.out);
-            printWriter.append(format("== %s ==%n", "write latency"));
-            printWriter.append(format("%-6s%20f%n", "mean", histogram.getMean()));
-            printWriter.append(format("%-6s%20d%n", "min", histogram.getMinValue()));
-            printWriter.append(format("%-6s%20d%n", "50.00%", histogram.getValueAtPercentile(50.0d)));
-            printWriter.append(format("%-6s%20d%n", "90.00%", histogram.getValueAtPercentile(90.0d)));
-            printWriter.append(format("%-6s%20d%n", "99.00%", histogram.getValueAtPercentile(99.0d)));
-            printWriter.append(format("%-6s%20d%n", "99.90%", histogram.getValueAtPercentile(99.9d)));
-            printWriter.append(format("%-6s%20d%n", "99.99%", histogram.getValueAtPercentile(99.99d)));
-            printWriter.append(format("%-6s%20d%n", "max", histogram.getMaxValue()));
-            printWriter.append(format("%-6s%20d%n", "count", histogram.getTotalCount()));
-            printWriter.append("\n");
-            printWriter.flush();
+            outputFormat.output(histogram, printWriter);
         }
 
         histogram.reset();

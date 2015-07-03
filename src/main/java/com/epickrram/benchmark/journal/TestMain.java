@@ -5,6 +5,7 @@ import com.beust.jcommander.Parameter;
 import com.epickrram.benchmark.journal.impl.JournalAllocator;
 import com.epickrram.benchmark.journal.impl.PositionalWriteJournaller;
 import com.epickrram.benchmark.journal.impl.SeekThenWriteJournaller;
+import com.epickrram.benchmark.journal.instrument.OutputFormat;
 import com.epickrram.benchmark.journal.instrument.TimingJournaller;
 import com.epickrram.benchmark.journal.setup.FilePreallocator;
 
@@ -17,6 +18,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.function.Function;
+
+import static com.epickrram.benchmark.journal.instrument.OutputFormat.valueOf;
 
 public final class TestMain
 {
@@ -54,7 +57,7 @@ public final class TestMain
 
         preallocateFiles(config, journalDir);
 
-        final TimingJournaller timingJournaller = new TimingJournaller(journaller);
+        final TimingJournaller timingJournaller = new TimingJournaller(journaller, valueOf(config.outputFormat));
 
         System.out.println("Doing warm-up");
         new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize, 1, config.writesPerBlock).execute();
@@ -62,7 +65,8 @@ public final class TestMain
         timingJournaller.setRecording(true);
 
         System.out.println("Starting measurement for journaller " + config.journallerType);
-        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize, config.measurementIterations, config.writesPerBlock).execute();
+        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize,
+                config.measurementIterations, config.writesPerBlock).execute();
     }
 
     private static void preallocateFiles(final Config config, final Path journalDir) throws IOException
@@ -86,6 +90,8 @@ public final class TestMain
         private boolean help;
         @Parameter(names = "-w", description = "writes per block")
         private int writesPerBlock = 1;
+        @Parameter(names = "-f", description = "output format")
+        private String outputFormat = "LONG";
     }
 
     private static Function<Path, RandomAccessFile> randomAccessFileFactory()

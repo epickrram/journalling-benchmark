@@ -2,7 +2,6 @@ package com.epickrram.benchmark.journal;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.locks.LockSupport;
 import java.util.function.Function;
 
 public final class Driver
@@ -28,6 +27,7 @@ public final class Driver
 
     public void execute() throws IOException
     {
+        final Sleeper sleeper = new Sleeper();
         final ByteBuffer buffer = bufferFactory.apply(MESSAGE_SIZE);
         buffer.putInt(0xED0CDAED);
 
@@ -45,11 +45,23 @@ public final class Driver
                     journaller.write(buffer, newBlock);
                     remaining -= (newBlock) ? MESSAGE_SIZE : 0;
                     counter++;
-                    LockSupport.parkNanos(Journaller.DELAY_BETWEEN_BLOCKS_NANOS);
+                    sleeper.sleepFor(Journaller.DELAY_BETWEEN_BLOCKS_NANOS);
                 }
             }
 
             journaller.complete();
+        }
+    }
+
+    private static final class Sleeper
+    {
+        private void sleepFor(final long nanos)
+        {
+            final long wakeUpAt = System.nanoTime() + nanos;
+            while(System.nanoTime() < wakeUpAt)
+            {
+                //spin
+            }
         }
     }
 }
