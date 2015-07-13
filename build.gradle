@@ -20,7 +20,7 @@ apply plugin: 'checkstyle'
 
 defaultTasks 'checkstyleMain', 'checkstyleTest', 'build'
 
-version = new Version(major: 0, revision: 1)
+version = new Version(major: 0, revision: 2)
 
 ext {
     fullName = 'Journalling benchmark'
@@ -54,8 +54,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.hdrhistogram:HdrHistogram:2.1.4', 'com.beust:jcommander:1.48'
-
+    compile 'org.hdrhistogram:HdrHistogram:2.1.4', 'com.beust:jcommander:1.48', 'com.higherfrequencytrading:affinity:1.7'
 }
 
 sourceCompatibility = 1.8

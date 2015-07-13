@@ -15,7 +15,7 @@ public final class Driver
     private int writesPerBlock;
 
     public Driver(final Function<Integer, ByteBuffer> bufferFactory, final Journaller journaller, final int fileCount,
-                  final long fileSize, final int iterations, int writesPerBlock)
+                  final long fileSize, final int iterations, final int writesPerBlock)
     {
         this.bufferFactory = bufferFactory;
         this.journaller = journaller;

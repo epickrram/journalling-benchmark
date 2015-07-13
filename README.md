@@ -11,10 +11,11 @@ Usage
 Parameters
 ==========
 
-* -c - number of journals to write
+* -j - number of journals to write
 * -d - target directory for journals
 * -i - measurement iterations
 * -s - file size (bytes)
+* -c - cpu affinity for journaller thread (default none)
 * -f - output format (SHORT|LONG|DETAIL)
 * -w - number of times to write the same block
 * -t - journaller type
