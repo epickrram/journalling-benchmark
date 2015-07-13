@@ -6,7 +6,7 @@ Usage
 
 1. clone this repository
 2. run ./gradlew bundleJar
-3. run java -jar ./build/libs/journalling-benchmark-all-0.0.1.jar -h
+3. run java -jar ./build/libs/journalling-benchmark-all-0.0.3.jar -h
 
 Parameters
 ==========
