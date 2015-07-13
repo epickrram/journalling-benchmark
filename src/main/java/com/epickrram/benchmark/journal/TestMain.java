@@ -5,10 +5,9 @@ import com.beust.jcommander.Parameter;
 import com.epickrram.benchmark.journal.impl.JournalAllocator;
 import com.epickrram.benchmark.journal.impl.PositionalWriteJournaller;
 import com.epickrram.benchmark.journal.impl.SeekThenWriteJournaller;
-import com.epickrram.benchmark.journal.instrument.OutputFormat;
 import com.epickrram.benchmark.journal.instrument.TimingJournaller;
 import com.epickrram.benchmark.journal.setup.FilePreallocator;
-import com.higherfrequencytrading.affinity.AffinitySupport;
+import net.openhft.affinity.AffinitySupport;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -86,10 +85,6 @@ public final class TestMain
             System.out.println("Setting journaller thread affinity to cpu: " + cpuAffinity);
             final long cpuListBitMask = cpuListToBitMask(new int[]{cpuAffinity});
             AffinitySupport.setAffinity(cpuListBitMask);
-            if(AffinitySupport.getAffinity() != cpuListBitMask)
-            {
-                throw new IllegalStateException("Unable to set thread affinity to cpu: " + cpuAffinity);
-            }
         }
     }
 
