@@ -6,8 +6,6 @@ import java.nio.channels.FileChannel;
 
 public final class PositionalWriteJournaller extends AbstractJournaller<FileChannel>
 {
-    private long positionInFile;
-
     public PositionalWriteJournaller(final long fileSize, final JournalAllocator<FileChannel> journalAllocator)
     {
         super(fileSize, journalAllocator);
