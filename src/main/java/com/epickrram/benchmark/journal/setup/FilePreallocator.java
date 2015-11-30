@@ -1,10 +1,13 @@
 package com.epickrram.benchmark.journal.setup;
 
+import com.epickrram.benchmark.journal.JournalMode;
 import com.epickrram.benchmark.journal.Journaller;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -20,16 +23,32 @@ public final class FilePreallocator
     private final Path targetDir;
     private final long fileSize;
     private final int fileCount;
+    private final JournalMode journalMode;
 
-    public FilePreallocator(final Path targetDir, final long fileSize, final int fileCount)
+    public FilePreallocator(final Path targetDir, int numberOfFiles, final long fileSize, final JournalMode journalMode)
     {
         this.targetDir = targetDir;
         this.fileSize = fileSize;
-        this.fileCount = fileCount;
+        this.fileCount = numberOfFiles;
+        this.journalMode = journalMode;
     }
 
     public void preallocate() throws IOException
     {
+        Files.find(targetDir, 1, (path, attr) -> path.toFile().getName().startsWith("journalling-benchmark")).forEach(path -> {
+            try
+            {
+                Files.delete(path);
+            }
+            catch (IOException e)
+            {
+                throw new UncheckedIOException(e);
+            }
+        });
+        if(journalMode == JournalMode.NO_PREALLOCATION)
+        {
+            return;
+        }
         System.out.println("Preallocating " + fileCount + " files");
         final ByteBuffer buffer = allocateDirect(BLOCK_SIZE);
         buffer.putInt(0xDEADC0DE);
@@ -37,11 +56,12 @@ public final class FilePreallocator
         {
             try(final FileChannel channel = createFile(i))
             {
-                long remaining = fileSize;
-                while(remaining > 0)
-                {
-                    buffer.clear();
-                    remaining -= channel.write(buffer);
+                if(journalMode == JournalMode.PREALLOCATE_ZEROED) {
+                    long remaining = fileSize;
+                    while (remaining > 0) {
+                        buffer.clear();
+                        remaining -= channel.write(buffer);
+                    }
                 }
             }
         }

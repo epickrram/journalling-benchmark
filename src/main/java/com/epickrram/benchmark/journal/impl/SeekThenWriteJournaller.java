@@ -6,9 +6,9 @@ import java.nio.ByteBuffer;
 
 public final class SeekThenWriteJournaller extends AbstractJournaller<RandomAccessFile>
 {
-    public SeekThenWriteJournaller(final long fileSize, final JournalAllocator<RandomAccessFile> journalAllocator, final boolean appendOnly)
+    public SeekThenWriteJournaller(final long fileSize, final JournalAllocator<RandomAccessFile> journalAllocator)
     {
-        super(fileSize, journalAllocator, appendOnly);
+        super(fileSize, journalAllocator);
     }
 
     @Override

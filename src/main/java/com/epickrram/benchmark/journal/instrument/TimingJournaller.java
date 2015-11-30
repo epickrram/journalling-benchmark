@@ -30,10 +30,7 @@ public final class TimingJournaller implements Journaller
         delegate.write(data, newBlock);
 
         final long durationNanos = System.nanoTime() - startNanos;
-        if(recording)
-        {
-            histogram.recordValue(Math.min(HIGHEST_TRACKABLE_VALUE, durationNanos));
-        }
+        histogram.recordValue(Math.min(HIGHEST_TRACKABLE_VALUE, durationNanos));
     }
 
     @Override

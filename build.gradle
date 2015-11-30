@@ -20,7 +20,7 @@ apply plugin: 'checkstyle'
 
 defaultTasks 'checkstyleMain', 'checkstyleTest', 'build'
 
-version = new Version(major: 0, revision: 3)
+version = new Version(major: 0, revision: 6)
 
 ext {
     fullName = 'Journalling benchmark'

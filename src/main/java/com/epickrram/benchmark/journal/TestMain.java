@@ -45,12 +45,12 @@ public final class TestMain
         Function<Integer, ByteBuffer> bufferFactory = null;
         if("pwrite".equals(config.journallerType))
         {
-            journaller = new PositionalWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, fileChannelFactory(config)), config.appendOnly);
+            journaller = new PositionalWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, fileChannelFactory(config)));
             bufferFactory = ByteBuffer::allocateDirect;
         }
         else if("seek".equals(config.journallerType))
         {
-            journaller = new SeekThenWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, randomAccessFileFactory()), config.appendOnly);
+            journaller = new SeekThenWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, randomAccessFileFactory()));
             bufferFactory = ByteBuffer::allocate;
         }
         else
@@ -59,25 +59,25 @@ public final class TestMain
             System.exit(1);
         }
 
-        if(!config.doNotPreallocate)
-        {
-            preallocateFiles(config, journalDir);
-        }
+        preallocateFiles(config, journalDir);
+
 
         final TimingJournaller timingJournaller = new TimingJournaller(journaller, valueOf(config.outputFormat));
 
         System.out.println("Doing warm-up");
-        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize,
+        new Driver(bufferFactory, timingJournaller, config.fileSize,
                 WARMUP_ITERATIONS, config.writesPerBlock).execute();
 
         setAffinity(config.cpuAffinity);
         performGc();
 
+
+
         timingJournaller.setRecording(true);
 
         System.out.println("Starting measurement for journaller " + config.journallerType);
 
-        new Driver(bufferFactory, timingJournaller, config.fileCount, config.fileSize,
+        new Driver(bufferFactory, timingJournaller, config.fileSize,
                 config.measurementIterations, config.writesPerBlock).execute();
     }
 
@@ -112,7 +112,8 @@ public final class TestMain
 
     private static void preallocateFiles(final Config config, final Path journalDir) throws IOException
     {
-        new FilePreallocator(journalDir, config.fileSize, config.fileCount).preallocate();
+        new FilePreallocator(journalDir, config.measurementIterations + WARMUP_ITERATIONS,
+                config.fileSize, JournalMode.valueOf(config.journalMode)).preallocate();
     }
 
     private static final class Config
@@ -123,8 +124,6 @@ public final class TestMain
         private String journalDir = System.getProperty("java.io.tmpdir");
         @Parameter(names = "-s", description = "file size (bytes)")
         private int fileSize = 1024 * 1024;
-        @Parameter(names = "-j", description = "number of journals")
-        private int fileCount = 50;
         @Parameter(names = "-t", description = "journaller type [seek|pwrite]")
         private String journallerType;
         @Parameter(names = "-i", description = "measurement iterations")
@@ -137,10 +136,8 @@ public final class TestMain
         private String outputFormat = "LONG";
         @Parameter(names = "-c", description = "cpu affinity")
         private int cpuAffinity = NO_AFFINITY;
-        @Parameter(names = "-p", description = "don't preallocate")
-        private boolean doNotPreallocate = false;
-        @Parameter(names = "-a", description = "append only")
-        private boolean appendOnly = false;
+        @Parameter(names = "-m", description = "journal mode [PREALLOCATE_SPARSE|PREALLOCATE_ZEROED|NO_PREALLOCATION]")
+        private String journalMode;
     }
 
     private static Function<Path, RandomAccessFile> randomAccessFileFactory()
@@ -162,7 +159,7 @@ public final class TestMain
         return (path) -> {
             try
             {
-                if(config.doNotPreallocate)
+                if(!path.toFile().exists())
                 {
                     path.toFile().createNewFile();
                 }
