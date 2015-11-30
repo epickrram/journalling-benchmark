@@ -10,13 +10,15 @@ public abstract class AbstractJournaller<T> implements Journaller
 {
     private final long fileSize;
     protected final JournalAllocator<T> journalAllocator;
+    private final boolean appendOnly;
     protected T currentJournal;
     protected long positionInFile;
 
-    protected AbstractJournaller(final long fileSize, final JournalAllocator<T> journalAllocator)
+    protected AbstractJournaller(final long fileSize, final JournalAllocator<T> journalAllocator, final boolean appendOnly)
     {
         this.fileSize = fileSize;
         this.journalAllocator = journalAllocator;
+        this.appendOnly = appendOnly;
     }
 
     @Override
@@ -42,7 +44,7 @@ public abstract class AbstractJournaller<T> implements Journaller
 
     private boolean shouldRoll(final long position, final long messageSize)
     {
-        return position + messageSize > fileSize;
+        return (appendOnly ? currentJournal == null : position + messageSize > fileSize);
     }
 
     private void roll() throws IOException

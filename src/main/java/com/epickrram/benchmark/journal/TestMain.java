@@ -45,12 +45,12 @@ public final class TestMain
         Function<Integer, ByteBuffer> bufferFactory = null;
         if("pwrite".equals(config.journallerType))
         {
-            journaller = new PositionalWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, fileChannelFactory()));
+            journaller = new PositionalWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, fileChannelFactory(config)), config.appendOnly);
             bufferFactory = ByteBuffer::allocateDirect;
         }
         else if("seek".equals(config.journallerType))
         {
-            journaller = new SeekThenWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, randomAccessFileFactory()));
+            journaller = new SeekThenWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, randomAccessFileFactory()), config.appendOnly);
             bufferFactory = ByteBuffer::allocate;
         }
         else
@@ -59,7 +59,10 @@ public final class TestMain
             System.exit(1);
         }
 
-        preallocateFiles(config, journalDir);
+        if(!config.doNotPreallocate)
+        {
+            preallocateFiles(config, journalDir);
+        }
 
         final TimingJournaller timingJournaller = new TimingJournaller(journaller, valueOf(config.outputFormat));
 
@@ -134,6 +137,10 @@ public final class TestMain
         private String outputFormat = "LONG";
         @Parameter(names = "-c", description = "cpu affinity")
         private int cpuAffinity = NO_AFFINITY;
+        @Parameter(names = "-p", description = "don't preallocate")
+        private boolean doNotPreallocate = false;
+        @Parameter(names = "-a", description = "append only")
+        private boolean appendOnly = false;
     }
 
     private static Function<Path, RandomAccessFile> randomAccessFileFactory()
@@ -150,11 +157,15 @@ public final class TestMain
         };
     }
 
-    private static Function<Path, FileChannel> fileChannelFactory()
+    private static Function<Path, FileChannel> fileChannelFactory(final Config config)
     {
         return (path) -> {
             try
             {
+                if(config.doNotPreallocate)
+                {
+                    path.toFile().createNewFile();
+                }
                 return FileChannel.open(path, StandardOpenOption.WRITE);
             }
             catch (IOException e)
