@@ -6,9 +6,10 @@ import java.nio.ByteBuffer;
 
 public final class SeekThenWriteJournaller extends AbstractJournaller<RandomAccessFile>
 {
-    public SeekThenWriteJournaller(final long fileSize, final JournalAllocator<RandomAccessFile> journalAllocator)
+    public SeekThenWriteJournaller(final long fileSize, final JournalAllocator<RandomAccessFile> journalAllocator,
+                                   final boolean isPreallocatingBlocks)
     {
-        super(fileSize, journalAllocator);
+        super(fileSize, journalAllocator, isPreallocatingBlocks);
     }
 
     @Override
@@ -19,5 +20,16 @@ public final class SeekThenWriteJournaller extends AbstractJournaller<RandomAcce
 
         currentJournal.seek(positionInFile);
         currentJournal.write(data.array(), data.position(), data.remaining());
+    }
+
+    @Override
+    protected void preloadJournal(final RandomAccessFile journal) throws IOException
+    {
+        for(int i = 0; i < journal.length(); i++)
+        {
+            journal.seek(i);
+            journal.read();
+        }
+        journal.close();
     }
 }

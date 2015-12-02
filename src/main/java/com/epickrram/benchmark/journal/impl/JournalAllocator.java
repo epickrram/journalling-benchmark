@@ -28,4 +28,9 @@ public final class JournalAllocator<T>
     {
         return journalFactory.apply(Paths.get(journalDir.toString(), JOURNAL_NAMES.getJournalFilename(journalNumber++)));
     }
+
+    T peekNextJournal() throws IOException
+    {
+        return journalFactory.apply(Paths.get(journalDir.toString(), JOURNAL_NAMES.getJournalFilename(journalNumber + 1)));
+    }
 }

@@ -39,18 +39,24 @@ public final class TestMain
             System.exit(0);
         }
 
+        final JournalMode journalMode = JournalMode.valueOf(config.journalMode);
+
         final Path journalDir = Paths.get(config.journalDir);
 
         Journaller journaller = null;
         Function<Integer, ByteBuffer> bufferFactory = null;
         if("pwrite".equals(config.journallerType))
         {
-            journaller = new PositionalWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, fileChannelFactory(config)));
+            journaller = new PositionalWriteJournaller(config.fileSize,
+                    new JournalAllocator<>(journalDir, fileChannelFactory(config)),
+                    journalMode == JournalMode.PREALLOCATE_ZEROED);
             bufferFactory = ByteBuffer::allocateDirect;
         }
         else if("seek".equals(config.journallerType))
         {
-            journaller = new SeekThenWriteJournaller(config.fileSize, new JournalAllocator<>(journalDir, randomAccessFileFactory()));
+            journaller = new SeekThenWriteJournaller(config.fileSize,
+                    new JournalAllocator<>(journalDir, randomAccessFileFactory()),
+                    journalMode == JournalMode.PREALLOCATE_ZEROED);
             bufferFactory = ByteBuffer::allocate;
         }
         else
@@ -70,8 +76,6 @@ public final class TestMain
 
         setAffinity(config.cpuAffinity);
         performGc();
-
-
 
         timingJournaller.setRecording(true);
 
