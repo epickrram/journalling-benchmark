@@ -167,7 +167,7 @@ public final class TestMain
                 {
                     path.toFile().createNewFile();
                 }
-                return FileChannel.open(path, StandardOpenOption.WRITE);
+                return FileChannel.open(path, StandardOpenOption.WRITE, StandardOpenOption.READ);
             }
             catch (IOException e)
             {
